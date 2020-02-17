@@ -6,7 +6,7 @@
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
+  typeof define === 'function' && define.amd ? define('main_es5_umd', factory) :
   (global = global || self, global.main_es5_umd = factory());
 }(this, (function () { 'use strict';
 
@@ -279,3 +279,4 @@
   return Main;
 
 })));
+//# sourceMappingURL=main_es5_umd.js.map

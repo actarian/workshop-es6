@@ -1,6 +1,7 @@
 const { DEFAULT_EXTENSIONS } = require('@babel/core'),
 	babelPresetEnv = require('@babel/preset-env'),
 	babelPresetTypescript = require('@babel/preset-typescript'),
+	gulpRollup = require('gulp-better-rollup'),
 	path = require('path'),
 	rollup = require('rollup'),
 	rollupPluginBabel = require('rollup-plugin-babel'),
@@ -15,6 +16,12 @@ const { DEFAULT_EXTENSIONS } = require('@babel/core'),
 	vinyl = require('vinyl');
 
 function rollup_(config, item) {
+	const input = rollupInput_(item);
+	const output = rollupOutput_(item);
+	return gulpRollup(input, output);
+}
+
+function rollup__(config, item) {
 	return through2.obj(function(file, enc, callback) {
 		// console.log('TfsCheckout', file.path);
 		if (file.isNull()) {

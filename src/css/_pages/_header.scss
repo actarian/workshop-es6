@@ -4,4 +4,9 @@
 
 header {
 	background: rgba($foreground, 0.2);
+
+	.container-fluid {
+		display: flex;
+		justify-content: space-between;
+	}
 }
