@@ -1,0 +1,39 @@
+﻿{
+	"targets": {
+		"browser": {
+			"compile": [{
+				"input": "src/*.html",
+				"output": "docs/",
+				"minify": true
+			}, {
+				"input": "src/css/main.scss",
+				"output": "docs/css/main.css",
+				"minify": true
+			}, {
+				"input": "src/js/main.js",
+				"output": {
+					"file": "docs/js/main.es5.js",
+					"format": "iife"
+				}
+      }, {
+				"input": "src/js/main.js",
+				"output": {
+					"file": "docs/js/main.es6.js",
+					"format": "esm"
+				},
+				"target": {
+					"esmodules": true
+				}
+      }],
+			"bundle": []
+		}
+	},
+	"server": {
+		"root": "./docs",
+		"path": "/workshop-es6/",
+		"host": "localhost",
+		"port": 9999,
+		"log": false
+	},
+	"tfs": false
+}

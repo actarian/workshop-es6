@@ -1,0 +1,75 @@
+/*
+* Index
+*/
+
+.listing--components {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+
+	$gutter: 30px;
+
+	@include media-up(lg) {
+		margin-left: - $gutter / 2;
+		margin-right: - $gutter / 2;
+
+		.card--component {
+			@include as-col(3, 12, $gutter);
+		}
+	}
+
+	@include media-down(md) {
+		margin-left: - $gutter / 2;
+		margin-right: - $gutter / 2;
+
+		.card--component {
+			@include as-col(4, 12, $gutter);
+		}
+	}
+
+	@include media-down(sm) {
+		margin-left: - $gutter / 2;
+		margin-right: - $gutter / 2;
+
+		.card--component {
+			@include as-col(6, 12, $gutter);
+		}
+	}
+
+	@include media-down(xs) {
+		.card--component {
+			@include as-col(12, 12, 0);
+		}
+	}
+}
+
+.card--component {
+	margin-bottom: 30px;
+	padding: 20px;
+	border: 2px solid $foreground;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: all ease-in-out 350ms;
+
+	&:hover {
+		box-shadow: 0 20px 20px -10px rgba(0, 0, 0, 0.15);
+	}
+
+	.btn {
+		border: 2px solid $foreground;
+		padding: 4px 10px;
+
+		&:hover {
+			background-color: $foreground;
+			color: $foreground-negative;
+		}
+	}
+
+	&-simple {
+		border-color: $foreground-primary;
+	}
+
+}
