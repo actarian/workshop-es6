@@ -4,8 +4,7 @@
  * License: MIT
  */
 
-this.main = this.main || {};
-this.main.es5 = (function () {
+var main_es5_iife = (function () {
   'use strict';
 
   function _inheritsLoose(subClass, superClass) {
@@ -161,7 +160,7 @@ this.main.es5 = (function () {
     _proto.render = function render() {
       return (
         /* html */
-        "<div class=\"card--component\">\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>"
+        "<div class=\"card--component\">\n\t\t\tI'm a ButtonComponent!<br />\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>"
       );
     };
 
@@ -277,4 +276,4 @@ this.main.es5 = (function () {
   return Main;
 
 }());
-//# sourceMappingURL=main.es5.js.map
+//# sourceMappingURL=main_es5_iife.js.map

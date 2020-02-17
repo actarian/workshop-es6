@@ -1,0 +1,15 @@
+<body>
+	<script type="module">
+		console.log(`I'm an ES6 Modules supporting browser!`);
+
+	</script>
+	<script nomodule>
+		console.log('I\'m an old browser, can\'t support ES6 Modules!');
+
+	</script>
+</body>
+
+<body>
+	<script type="module" src="/workshop-es6/js/main_es6_esm.js"></script>
+	<script nomodule src="/workshop-es6/js/main_es5_iife.js"></script>
+</body>

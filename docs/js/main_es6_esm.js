@@ -119,7 +119,7 @@ class ButtonComponent extends Component {
   render() {
     return (
       /* html */
-      "<div class=\"card--component\">\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>"
+      "<div class=\"card--component\">\n\t\t\tI'm a ButtonComponent!<br />\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>"
     );
   }
 
@@ -199,4 +199,4 @@ class Main {
 var main = new Main();
 
 export default Main;
-//# sourceMappingURL=main.es6.js.map
+//# sourceMappingURL=main_es6_esm.js.map

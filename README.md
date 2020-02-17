@@ -1,7 +1,6 @@
 # workshop-es6
 
-A simple compiler & bundler with building targets, and serve option with livereload.  
-
+> [Slides](https://docs.google.com/presentation/d/1chyAlUxyP6NFxptSf3ncyYczI1GFUw65ZxF-uiddwWU/edit?usp=sharing)  
 > [Demo](https://actarian.github.io/workshop-es6/)
 
 ## Requirements

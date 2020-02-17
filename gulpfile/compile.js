@@ -63,7 +63,8 @@ function compileJs_(config, done) {
 
 function compileRollup_(config, item) {
 	const outputs = rollupOutput_(item);
-	const minify = item.output.minify;
+	const minify = item.minify;
+	// console.log(item, outputs);
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(plumber())
 		.pipe(rollup_(config, item))

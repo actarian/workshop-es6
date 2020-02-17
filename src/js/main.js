@@ -12,25 +12,31 @@ export default class Main {
 	}
 
 	addSimpleComponents() {
-		const instances = Array.from(document.querySelectorAll('[simple-component]')).map(node => new SimpleComponent().setNode(node));
+		const instances = Array.from(document.querySelectorAll('[simple-component]'))
+			.map(node => new SimpleComponent().setNode(node));
+
 		console.log('Main.addSimpleComponents', instances);
 		return instances;
 	}
 
 	addTemplateComponents() {
-		const instances = Array.from(document.querySelectorAll('[template-component]')).map(node => new TemplateComponent().setNode(node));
+		const instances = Array.from(document.querySelectorAll('[template-component]'))
+			.map(node => new TemplateComponent().setNode(node));
+
 		console.log('Main.addTemplateComponents', instances);
 		return instances;
 	}
 
 	addButtonComponents() {
-		const instances = Array.from(document.querySelectorAll('[button-component]')).map(node => {
-			const instance = new ButtonComponent().setNode(node);
-			instance.on('click', () => {
-				alert('clicked');
+		const instances = Array.from(document.querySelectorAll('[button-component]'))
+			.map(node => {
+				const instance = new ButtonComponent().setNode(node);
+				instance.on('click', () => {
+					alert('clicked');
+				});
+				return instance;
 			});
-			return instance;
-		});
+
 		console.log('Main.addButtonComponents', instances);
 		return instances;
 	}
@@ -43,7 +49,8 @@ export default class Main {
 		};
 		let instances = [];
 		for (let key in SELECTORS) {
-			instances = instances.concat(Array.from(document.querySelectorAll(key)).map(node => new SELECTORS[key]().setNode(node)));
+			instances = instances.concat(Array.from(document.querySelectorAll(key))
+				.map(node => new SELECTORS[key]().setNode(node)));
 		}
 		console.log('Main.addComponents', instances);
 		return instances;

@@ -19,6 +19,7 @@ export default class ButtonComponent extends Component {
 
 	render() {
 		return /* html */ `<div class="card--component">
+			I'm a ButtonComponent!<br />
 			<button type="button" class="btn">Click Me!</button>
 		</div>`;
 	}
