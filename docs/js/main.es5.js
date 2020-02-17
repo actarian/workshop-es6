@@ -181,7 +181,6 @@ this.main.es5 = (function () {
 
     _proto.onInit = function onInit(node) {
       node.innerHTML = "I'm a SimpleComponent!";
-      console.log(node);
       node.classList.add('card--component', 'card--component-simple');
     };
 
