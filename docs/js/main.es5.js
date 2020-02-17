@@ -213,9 +213,10 @@ this.main.es5 = (function () {
   /*#__PURE__*/
   function () {
     function Main() {
-      var simpleComponents = this.addSimpleComponents(); // const templateComponents = this.addTemplateComponents();
-      // const buttonComponents = this.addButtonComponents();
-      // const components = this.addComponents();
+      var simpleComponents = this.addSimpleComponents();
+      var templateComponents = this.addTemplateComponents();
+      var buttonComponents = this.addButtonComponents();
+      var components = this.addComponents();
     }
 
     var _proto = Main.prototype;

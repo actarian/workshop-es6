@@ -6,9 +6,9 @@ export default class Main {
 
 	constructor() {
 		const simpleComponents = this.addSimpleComponents();
-		// const templateComponents = this.addTemplateComponents();
-		// const buttonComponents = this.addButtonComponents();
-		// const components = this.addComponents();
+		const templateComponents = this.addTemplateComponents();
+		const buttonComponents = this.addButtonComponents();
+		const components = this.addComponents();
 	}
 
 	addSimpleComponents() {
