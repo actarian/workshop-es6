@@ -27,6 +27,15 @@
 					"file": "docs/js/main_es5_umd.js",
 					"format": "umd"
         }]
+      }, {
+				"input": "src/js/test/test.js",
+				"output": {
+					"file": "docs/js/test/test.js",
+					"format": "esm"
+				},
+				"target": {
+					"esmodules": true
+				}
       }],
 			"bundle": []
 		}

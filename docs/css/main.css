@@ -2947,6 +2947,9 @@ header {
 */
 footer {
   background: rgba(22, 37, 91, 0.2); }
+  footer .container-fluid {
+    display: flex;
+    justify-content: space-between; }
 
 /*
 * Main
