@@ -67,6 +67,7 @@
 		"time-stamp": "~2.2.0",
 		"tslib": "1.10.0",
 		"typescript": "~3.7.5",
-		"vinyl": "~2.2.0"
+		"vinyl": "~2.2.0",
+		"vinyl-sourcemaps-apply": "~0.2.1"
 	}
 }

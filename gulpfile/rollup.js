@@ -15,13 +15,15 @@ const { DEFAULT_EXTENSIONS } = require('@babel/core'),
 	typescript = require('typescript'),
 	vinyl = require('vinyl');
 
-function rollup_(config, item) {
+const applySourceMap = require('vinyl-sourcemaps-apply');
+
+function rollup__(config, item) {
 	const input = rollupInput_(item);
 	const output = rollupOutput_(item);
 	return gulpRollup(input, output);
 }
 
-function rollup__(config, item) {
+function rollup_(config, item) {
 	return through2.obj(function(file, enc, callback) {
 		// console.log('TfsCheckout', file.path);
 		if (file.isNull()) {
@@ -31,6 +33,10 @@ function rollup__(config, item) {
 			console.warn('Rollup, Streaming not supported');
 			return callback(null, file);
 		}
+		// enable sourcemap is gulp-sourcemaps plugin is enabled
+		const maps = file.sourceMap !== undefined;
+		const originalCwd = file.cwd;
+		const originalPath = file.path;
 		const rollupGenerate = (bundle, output, i) => {
 			return bundle.generate(output).then(result => {
 				if (!result) {
@@ -54,7 +60,6 @@ function rollup__(config, item) {
 							isSocket: () => false
 						}
 					});
-					this.push(newFile);
 					targetFile = newFile;
 				} else {
 					file.path = newFilePath;
@@ -64,20 +69,20 @@ function rollup__(config, item) {
 				const generated = result.output[0];
 				// Pass sourcemap content and metadata to gulp-sourcemaps plugin to handle
 				// destination (and custom name) was given, possibly multiple output bundles.
-				/*
-				if (createSourceMap) {
-					generated.map.file = path.relative(originalCwd, originalPath)
-					generated.map.sources = generated.map.sources.map(source => path.relative(originalCwd, source))
+				if (maps) {
+					generated.map.file = path.relative(originalCwd, originalPath);
+					generated.map.sources = generated.map.sources.map(source => path.relative(originalCwd, source));
 				}
-				*/
+				// console.log(generated.map.file);
 				// return bundled file as buffer
 				targetFile.contents = Buffer.from(generated.code);
 				// apply sourcemap to output file
-				/*
-				if (createSourceMap) {
+				if (maps) {
 					applySourceMap(targetFile, generated.map);
 				}
-				*/
+				if (i > 0) {
+					this.push(targetFile);
+				}
 			}).catch(error => {
 				console.log('Rollup generate error', error);
 				/*
@@ -88,6 +93,7 @@ function rollup__(config, item) {
 				*/
 			});
 		};
+
 		rollup.rollup(rollupInput_(item)).then(bundle => {
 			const bundles = rollupOutput_(item);
 			// console.log(bundles);
@@ -97,6 +103,7 @@ function rollup__(config, item) {
 			// return bundle.write(bundles);
 		}).catch(error => {
 			console.log('Rollup bundle error', error);
+			throw (error);
 			/*
 			process.nextTick(() => {
 				this.emit('error', new Error('message'));

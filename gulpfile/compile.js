@@ -69,6 +69,7 @@ function compileRollup_(config, item) {
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(plumber())
 		.pipe(rollup_(config, item))
+		/*
 		.pipe(rename(function(file) {
 			const output = outputs.find(x => {
 				// console.log('file', x.file, file.basename, x.file.indexOf(file.basename));
@@ -76,6 +77,7 @@ function compileRollup_(config, item) {
 			});
 			file.dirname = path.dirname(output.file);
 		}))
+		*/
 		.pipe(tfsCheckout(config))
 		.pipe(dest('.', minify ? null : { sourcemaps: '.' }))
 		.pipe(filter('**/*.js'))
