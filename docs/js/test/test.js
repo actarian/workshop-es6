@@ -4,9 +4,11 @@
  * License: MIT
  */
 
+var value = 1;
+
 class Test {
   constructor() {
-    this.log('Test');
+    this.log(value);
   }
 
   log(message) {

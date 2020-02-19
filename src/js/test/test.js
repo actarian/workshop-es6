@@ -1,8 +1,10 @@
+import value from './module';
+
 export default class Test {
 
 	constructor() {
 
-		this.log('Test');
+		this.log(value);
 
 	}
 
