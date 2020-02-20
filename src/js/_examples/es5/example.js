@@ -1,6 +1,8 @@
 function Example() {
 
-	let a = [1, 2, 3];
+	var self = this;
+
+	var a = [1, 2, 3];
 	this.log('array', a);
 
 	a.push(1);
@@ -8,23 +10,31 @@ function Example() {
 	a.push(3);
 	this.log('push', a);
 
-	a.forEach(x => this.log('forEach', x));
+	a.forEach(function(x) {
+		self.log('forEach', x);
+	});
 
-	a = a.map(x => x * 2);
+	a = a.map(function(x) {
+		return x * 2;
+	});
 	this.log('map', a);
 
-	a = a.filter(x => x === 4);
+	a = a.filter(function(x) {
+		return x === 4;
+	});
 	this.log('filter', a);
 
 	var text = a.join(', ');
 	this.log('join', text);
 
-	const sum = a.reduce((previous, current, index) => {
+	const sum = a.reduce(function(previous, current, index) {
 		return current + previous;
 	}, 0);
 	this.log('reduce', sum);
 
-	var item = a.find(x => x === 4);
+	var item = a.find(function(x) {
+		return x === 4;
+	});
 	this.log('find', item);
 
 }
