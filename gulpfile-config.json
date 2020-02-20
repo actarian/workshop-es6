@@ -23,21 +23,21 @@
 				"output": [{
 					"file": "docs/js/main_es5_iife.js",
 					"format": "iife"
-				}, {
-					"file": "docs/js/main_es5_umd.js",
-					"format": "umd"
-        }]
+				}]
       }, {
-				"input": "src/js/test/test.js",
+				"input": "src/js/_examples/es6/example.js",
 				"output": {
-					"file": "docs/js/test/test.js",
+					"file": "docs/js/examples/es6/example.js",
 					"format": "esm"
 				},
 				"target": {
 					"esmodules": true
 				}
       }],
-			"bundle": []
+			"bundle": [{
+				"input": "src/js/_examples/es5/example.js",
+				"output": "docs/js/examples/es5/example.js"
+      }]
 		}
 	},
 	"server": {

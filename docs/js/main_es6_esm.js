@@ -145,34 +145,9 @@ class TemplateComponent extends Component {
 
 class Main {
   constructor() {
-    var simpleComponents = this.addSimpleComponents();
-    var templateComponents = this.addTemplateComponents();
-    var buttonComponents = this.addButtonComponents();
-    var components = this.addComponents();
-  }
-
-  addSimpleComponents() {
-    var instances = Array.from(document.querySelectorAll('[simple-component]')).map(node => new SimpleComponent().setNode(node));
-    console.log('Main.addSimpleComponents', instances);
-    return instances;
-  }
-
-  addTemplateComponents() {
-    var instances = Array.from(document.querySelectorAll('[template-component]')).map(node => new TemplateComponent().setNode(node));
-    console.log('Main.addTemplateComponents', instances);
-    return instances;
-  }
-
-  addButtonComponents() {
-    var instances = Array.from(document.querySelectorAll('[button-component]')).map(node => {
-      var instance = new ButtonComponent().setNode(node);
-      instance.on('click', () => {
-        alert('clicked');
-      });
-      return instance;
-    });
-    console.log('Main.addButtonComponents', instances);
-    return instances;
+    var components = this.addComponents(); // const simpleComponents = this.addSimpleComponents();
+    // const templateComponents = this.addTemplateComponents();
+    // const buttonComponents = this.addButtonComponents();
   }
 
   addComponents() {
@@ -184,16 +159,49 @@ class Main {
     var instances = [];
 
     var _loop = function _loop(key) {
-      instances = instances.concat(Array.from(document.querySelectorAll(key)).map(node => new SELECTORS[key]().setNode(node)));
+      instances = instances.concat(Array.from(document.querySelectorAll(key)).map(node => {
+        var instance = new SELECTORS[key]().setNode(node);
+        instance.on('click', () => {
+          alert('clicked');
+        });
+        return instance;
+      }));
     };
 
     for (var key in SELECTORS) {
       _loop(key);
     }
 
-    console.log('Main.addComponents', instances);
+    instances.forEach(x => console.log(x));
     return instances;
   }
+  /*
+  addSimpleComponents() {
+  	const instances = Array.from(document.querySelectorAll('[simple-component]'))
+  		.map(node => new SimpleComponent().setNode(node));
+  	console.log('Main.addSimpleComponents', instances);
+  	return instances;
+  }
+  	addTemplateComponents() {
+  	const instances = Array.from(document.querySelectorAll('[template-component]'))
+  		.map(node => new TemplateComponent().setNode(node));
+  		console.log('Main.addTemplateComponents', instances);
+  	return instances;
+  }
+  	addButtonComponents() {
+  	const instances = Array.from(document.querySelectorAll('[button-component]'))
+  		.map(node => {
+  			const instance = new ButtonComponent().setNode(node);
+  			instance.on('click', () => {
+  				alert('clicked');
+  			});
+  			return instance;
+  		});
+  		console.log('Main.addButtonComponents', instances);
+  	return instances;
+  }
+  */
+
 
 }
 var main = new Main();

@@ -211,41 +211,12 @@ var main_es5_iife = (function () {
   /*#__PURE__*/
   function () {
     function Main() {
-      var simpleComponents = this.addSimpleComponents();
-      var templateComponents = this.addTemplateComponents();
-      var buttonComponents = this.addButtonComponents();
-      var components = this.addComponents();
+      var components = this.addComponents(); // const simpleComponents = this.addSimpleComponents();
+      // const templateComponents = this.addTemplateComponents();
+      // const buttonComponents = this.addButtonComponents();
     }
 
     var _proto = Main.prototype;
-
-    _proto.addSimpleComponents = function addSimpleComponents() {
-      var instances = Array.from(document.querySelectorAll('[simple-component]')).map(function (node) {
-        return new SimpleComponent().setNode(node);
-      });
-      console.log('Main.addSimpleComponents', instances);
-      return instances;
-    };
-
-    _proto.addTemplateComponents = function addTemplateComponents() {
-      var instances = Array.from(document.querySelectorAll('[template-component]')).map(function (node) {
-        return new TemplateComponent().setNode(node);
-      });
-      console.log('Main.addTemplateComponents', instances);
-      return instances;
-    };
-
-    _proto.addButtonComponents = function addButtonComponents() {
-      var instances = Array.from(document.querySelectorAll('[button-component]')).map(function (node) {
-        var instance = new ButtonComponent().setNode(node);
-        instance.on('click', function () {
-          alert('clicked');
-        });
-        return instance;
-      });
-      console.log('Main.addButtonComponents', instances);
-      return instances;
-    };
 
     _proto.addComponents = function addComponents() {
       var SELECTORS = {
@@ -257,7 +228,11 @@ var main_es5_iife = (function () {
 
       var _loop = function _loop(key) {
         instances = instances.concat(Array.from(document.querySelectorAll(key)).map(function (node) {
-          return new SELECTORS[key]().setNode(node);
+          var instance = new SELECTORS[key]().setNode(node);
+          instance.on('click', function () {
+            alert('clicked');
+          });
+          return instance;
         }));
       };
 
@@ -265,9 +240,38 @@ var main_es5_iife = (function () {
         _loop(key);
       }
 
-      console.log('Main.addComponents', instances);
+      instances.forEach(function (x) {
+        return console.log(x);
+      });
       return instances;
-    };
+    }
+    /*
+    addSimpleComponents() {
+    	const instances = Array.from(document.querySelectorAll('[simple-component]'))
+    		.map(node => new SimpleComponent().setNode(node));
+    	console.log('Main.addSimpleComponents', instances);
+    	return instances;
+    }
+    	addTemplateComponents() {
+    	const instances = Array.from(document.querySelectorAll('[template-component]'))
+    		.map(node => new TemplateComponent().setNode(node));
+    		console.log('Main.addTemplateComponents', instances);
+    	return instances;
+    }
+    	addButtonComponents() {
+    	const instances = Array.from(document.querySelectorAll('[button-component]'))
+    		.map(node => {
+    			const instance = new ButtonComponent().setNode(node);
+    			instance.on('click', () => {
+    				alert('clicked');
+    			});
+    			return instance;
+    		});
+    		console.log('Main.addButtonComponents', instances);
+    	return instances;
+    }
+    */
+    ;
 
     return Main;
   }();
