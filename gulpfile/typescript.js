@@ -9,10 +9,11 @@ const typescript = require('typescript'),
 	rollupPluginSourcemaps = require('rollup-plugin-sourcemaps'),
 	rollupPluginLicense = require('rollup-plugin-license'),
 	rollupPluginNodeResolve = require('@rollup/plugin-node-resolve'),
-	rollupPluginTypescript = require('rollup-plugin-typescript2'),
+	rollupPluginTypescript2 = require('rollup-plugin-typescript2'),
 	// rollupPluginTypescript = require('@rollup/plugin-typescript'),
 	through2 = require('through2'),
-	vinyl = require('vinyl');
+	vinyl = require('vinyl'),
+	vinylSourcemapsApply = require('vinyl-sourcemaps-apply');
 
 const { getObject, extend } = require('./json');
 
@@ -298,13 +299,13 @@ function typescriptInput_(item) {
 		// Resolve source maps to the original source
 		rollupPluginSourcemaps(),
 		// Compile TypeScript files
-		path.extname(item.input) === '.ts' ? rollupPluginTypescript({
+		path.extname(item.input) === '.ts' ? rollupPluginTypescript2({
 			rollupCommonJSResolveHack: true,
 			clean: true,
 			declaration: true
 		}) : null,
 		/*
-		rollupPluginTypescript({
+		rollupPluginTypescript2({
 			lib: ['es5', 'es6', 'dom'],
 			target: 'es5',
 			tsconfig: false,
@@ -369,7 +370,7 @@ function typescriptOutput_(item) {
 		output.name = output.name || path.basename(output.file, '.js');
 		/*
 		const plugins = [
-			path.extname(input) === '.ts' ? rollupPluginTypescript({
+			path.extname(input) === '.ts' ? rollupPluginTypescript2({
 				target: output.format === 'es' ? 'ESNext' : 'ES5',
 				module: output.format === 'es' ? 'ES6' : 'ES5',
 				moduleResolution: output.format === 'iife' ? 'classic' : 'node',

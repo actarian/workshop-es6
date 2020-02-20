@@ -14,9 +14,6 @@
 				"output": {
 					"file": "docs/js/main_es6_esm.js",
 					"format": "esm"
-				},
-				"target": {
-					"esmodules": true
 				}
       }, {
 				"input": "src/js/main.js",
@@ -29,9 +26,6 @@
 				"output": {
 					"file": "docs/js/examples/es6/example.js",
 					"format": "esm"
-				},
-				"target": {
-					"esmodules": true
 				}
       }],
 			"bundle": [{

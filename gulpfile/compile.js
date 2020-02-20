@@ -65,7 +65,6 @@ function compileJs_(config, done) {
 function compileRollup_(config, item) {
 	const outputs = rollupOutput_(item);
 	const minify = item.minify;
-	// console.log(item, outputs);
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(plumber())
 		.pipe(rollup_(config, item))
@@ -112,7 +111,6 @@ function compileTs_(config, done) {
 				/*
 				'iife': 'iife', // A self-executing function, suitable for inclusion as a <script> tag. (If you want to create a bundle for your application, you probably want to use this.)
 				'umd': 'umd', // Universal Module Definition, works as amd, cjs and iife all in one
-
 				'amd': 'amd', // Asynchronous Module Definition, used with module loaders like RequireJS
 				'cjs': 'cjs', // CommonJS, suitable for Node and other bundlers
 				'esm': 'esm', // Keep the bundle as an ES module file, suitable for other bundlers and inclusion as a <script type=module> tag in modern browsers
@@ -228,7 +226,6 @@ module.exports = {
 	compileJs_,
 	compileTs_,
 	compileHtml_,
-	compilesGlobs_,
 	compileWatcher_,
 	compileCssWatcher_,
 	compileJsWatcher_
