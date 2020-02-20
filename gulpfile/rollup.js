@@ -1,6 +1,4 @@
 const { DEFAULT_EXTENSIONS } = require('@babel/core'),
-	babelPresetEnv = require('@babel/preset-env'),
-	babelPresetTypescript = require('@babel/preset-typescript'),
 	path = require('path'),
 	rollup = require('rollup'),
 	rollupPluginBabel = require('rollup-plugin-babel'),
@@ -15,6 +13,12 @@ const { DEFAULT_EXTENSIONS } = require('@babel/core'),
 	vinyl = require('vinyl'),
 	vinylSourcemapsApply = require('vinyl-sourcemaps-apply');
 
+const babelInput = true;
+const babelOutput = !babelInput;
+
+// map object storing rollup cache objects for each input file
+let rollupCache = new Map();
+
 function rollup_(config, item) {
 	return through2.obj(function(file, enc, callback) {
 		if (file.isNull()) {
@@ -23,6 +27,12 @@ function rollup_(config, item) {
 		if (file.isStream()) {
 			console.warn('Rollup, Streaming not supported');
 			return callback(null, file);
+		}
+		const inputOptions = rollupInput_(item);
+		// caching is enabled by default because of the nature of gulp and the watching/recompilatin
+		// but can be disabled by setting 'cache' to false
+		if (inputOptions.cache !== false) {
+			inputOptions.cache = rollupCache.get(inputOptions.input);
 		}
 		const maps = file.sourceMap !== undefined;
 		const originalCwd = file.cwd;
@@ -72,28 +82,31 @@ function rollup_(config, item) {
 				if (i > 0) {
 					this.push(targetFile);
 				}
+				return targetFile;
 			}).catch(error => {
 				console.log('Rollup generate error', error);
 			});
 		};
 
-		rollup.rollup(rollupInput_(item)).then(bundle => {
-			const outputs = rollupOutput_(item);
-			// console.log(outputs);
-			return Promise.all(outputs.map((output, i) => rollupGenerate(bundle, output, i))).then(complete => {
-				callback(null, file);
+		rollup.rollup(inputOptions).then(bundle => {
+				// console.log(bundle);
+				const outputs = rollupOutput_(item);
+				// console.log(outputs);
+				if (inputOptions.cache !== false) {
+					rollupCache.set(inputOptions.input, bundle);
+				}
+				return Promise.all(outputs.map((output, i) => rollupGenerate(bundle, output, i)));
+				// return bundle.write(outputs);
+			})
+			.then(() => callback(null, file)) // pass file to gulp and end stream
+			.catch(error => {
+				console.log('Rollup bundle error', error);
+				if (inputOptions.cache !== false) {
+					rollupCache.delete(inputOptions.input);
+				}
+				throw (error);
+				return callback(null, file);
 			});
-			// return bundle.write(outputs);
-		}).catch(error => {
-			console.log('Rollup bundle error', error);
-			throw (error);
-			/*
-			process.nextTick(() => {
-				this.emit('error', new Error('message'));
-				cb(null, file)
-			});
-			*/
-		});
 	});
 }
 
@@ -166,37 +179,41 @@ function rollupInput_(item) {
 			clean: true,
 			check: false,
 		}) : null,
-		true ? rollupPluginBabel({
+		babelInput ? rollupPluginBabel({
 			extensions: [
 				...DEFAULT_EXTENSIONS,
 				'.ts',
 				'.tsx'
 			],
 			presets: [
-				[babelPresetEnv, {
+				['@babel/preset-env', {
 					modules: false,
 					loose: true,
 					targets: babelTargets
 				}],
-				// [babelPresetTypescript, { modules: false, loose: true }]
+				// ['@babel/preset-typescript', { modules: false, loose: true }]
 			],
 			plugins: [
 				'@babel/plugin-proposal-class-properties',
 				'@babel/plugin-proposal-object-rest-spread'
 			],
 			exclude: 'node_modules/**', // only transpile our source code
+			comments: false,
 			// babelrc: false,
 		}) : null,
-		true ? rollupPluginLicense({
+		babelInput ? rollupPluginLicense({
 			banner: `@license <%= pkg.name %> v<%= pkg.version %>
 			(c) <%= moment().format('YYYY') %> <%= pkg.author %>
 			License: <%= pkg.license %>`,
 		}) : null,
+
 	].filter(x => x);
 	input = {
 		input: item.input,
 		plugins: plugins,
 		external: item.external || [],
+		cache: true,
+		treeshake: true,
 		/*
 		watch: {
 			include: watchGlob,
@@ -245,32 +262,33 @@ function rollupOutput_(item) {
 			babelTargets = item.target;
 		}
 		output.plugins = [
-			false ? rollupPluginBabel({
+			babelOutput ? rollupPluginBabel({
 				extensions: [
 					...DEFAULT_EXTENSIONS,
 					'.ts',
 					'.tsx'
 				],
 				presets: [
-					[babelPresetEnv, {
+					['@babel/preset-env', {
 						modules: false,
 						loose: true,
 						targets: babelTargets
 					}],
-					// [babelPresetTypescript, { modules: false, loose: true }]
+					// ['@babel/preset-typescript', { modules: false, loose: true }]
 				],
 				plugins: [
 					'@babel/plugin-proposal-class-properties',
 					'@babel/plugin-proposal-object-rest-spread'
 				],
 				exclude: 'node_modules/**', // only transpile our source code
+				comments: false,
 				// babelrc: false,
 			}) : null,
-			false ? rollupPluginLicense({
+			babelOutput ? rollupPluginLicense({
 				banner: `@license <%= pkg.name %> v<%= pkg.version %>
 				(c) <%= moment().format('YYYY') %> <%= pkg.author %>
 				License: <%= pkg.license %>`,
-			}) : null
+			}) : null,
 		].filter(x => x);
 		return output;
 	});

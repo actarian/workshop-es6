@@ -31,8 +31,7 @@ class Example {
   }
 
   log(action, value) {
-    console.log(action, value); // $('.output').html(value);
-
+    console.log(action, value);
     document.querySelector('.output').innerHTML += action + ": " + value + "<br />";
   }
 

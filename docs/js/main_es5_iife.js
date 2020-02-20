@@ -13,9 +13,7 @@ var main_es5_iife = (function () {
     subClass.__proto__ = superClass;
   }
 
-  var Emitter =
-  /*#__PURE__*/
-  function () {
+  var Emitter = function () {
     function Emitter(options) {
       if (options === void 0) {
         options = {};
@@ -54,7 +52,6 @@ var main_es5_iife = (function () {
 
       if (event) {
         event.forEach(function (callback) {
-          // callback.call(this, data);
           callback(data);
         });
       }
@@ -71,9 +68,7 @@ var main_es5_iife = (function () {
     return Emitter;
   }();
 
-  var Component =
-  /*#__PURE__*/
-  function (_Emitter) {
+  var Component = function (_Emitter) {
     _inheritsLoose(Component, _Emitter);
 
     function Component() {
@@ -118,22 +113,12 @@ var main_es5_iife = (function () {
       if (typeof this.onDestroy === 'function') {
         this.onDestroy(this.node);
       }
-    }
-    /*
-    render() {
-    	return `<div class="card--component">
-    		I'm an ES6 component!
-    	</div>`;
-    }
-    */
-    ;
+    };
 
     return Component;
   }(Emitter);
 
-  var ButtonComponent =
-  /*#__PURE__*/
-  function (_Component) {
+  var ButtonComponent = function (_Component) {
     _inheritsLoose(ButtonComponent, _Component);
 
     function ButtonComponent() {
@@ -158,18 +143,13 @@ var main_es5_iife = (function () {
     };
 
     _proto.render = function render() {
-      return (
-        /* html */
-        "<div class=\"card--component\">\n\t\t\tI'm a ButtonComponent!<br />\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>"
-      );
+      return "<div class=\"card--component\">\n\t\t\tI'm a ButtonComponent!<br />\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>";
     };
 
     return ButtonComponent;
   }(Component);
 
-  var SimpleComponent =
-  /*#__PURE__*/
-  function (_Component) {
+  var SimpleComponent = function (_Component) {
     _inheritsLoose(SimpleComponent, _Component);
 
     function SimpleComponent() {
@@ -186,9 +166,7 @@ var main_es5_iife = (function () {
     return SimpleComponent;
   }(Component);
 
-  var TemplateComponent =
-  /*#__PURE__*/
-  function (_Component) {
+  var TemplateComponent = function (_Component) {
     _inheritsLoose(TemplateComponent, _Component);
 
     function TemplateComponent() {
@@ -198,22 +176,15 @@ var main_es5_iife = (function () {
     var _proto = TemplateComponent.prototype;
 
     _proto.render = function render() {
-      return (
-        /* html */
-        "<div class=\"card--component\">\n\t\t\tI'm a TemplateComponent!\n\t\t</div>"
-      );
+      return "<div class=\"card--component\">\n\t\t\tI'm a TemplateComponent!\n\t\t</div>";
     };
 
     return TemplateComponent;
   }(Component);
 
-  var Main =
-  /*#__PURE__*/
-  function () {
+  var Main = function () {
     function Main() {
-      var components = this.addComponents(); // const simpleComponents = this.addSimpleComponents();
-      // const templateComponents = this.addTemplateComponents();
-      // const buttonComponents = this.addButtonComponents();
+      var components = this.addComponents();
     }
 
     var _proto = Main.prototype;
@@ -244,34 +215,7 @@ var main_es5_iife = (function () {
         return console.log(x);
       });
       return instances;
-    }
-    /*
-    addSimpleComponents() {
-    	const instances = Array.from(document.querySelectorAll('[simple-component]'))
-    		.map(node => new SimpleComponent().setNode(node));
-    	console.log('Main.addSimpleComponents', instances);
-    	return instances;
-    }
-    	addTemplateComponents() {
-    	const instances = Array.from(document.querySelectorAll('[template-component]'))
-    		.map(node => new TemplateComponent().setNode(node));
-    		console.log('Main.addTemplateComponents', instances);
-    	return instances;
-    }
-    	addButtonComponents() {
-    	const instances = Array.from(document.querySelectorAll('[button-component]'))
-    		.map(node => {
-    			const instance = new ButtonComponent().setNode(node);
-    			instance.on('click', () => {
-    				alert('clicked');
-    			});
-    			return instance;
-    		});
-    		console.log('Main.addButtonComponents', instances);
-    	return instances;
-    }
-    */
-    ;
+    };
 
     return Main;
   }();
