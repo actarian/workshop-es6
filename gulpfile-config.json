@@ -11,13 +11,10 @@
 				"minify": true
 			}, {
 				"input": "src/js/main.js",
-				"output": {
+				"output": [{
 					"file": "docs/js/main_es6_esm.js",
 					"format": "esm"
-				}
-      }, {
-				"input": "src/js/main.js",
-				"output": [{
+				}, {
 					"file": "docs/js/main_es5_iife.js",
 					"format": "iife"
 				}]

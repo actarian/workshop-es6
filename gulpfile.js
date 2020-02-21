@@ -24,3 +24,5 @@ exports.buildJs = buildJs;
 exports.startJs = buildJsAndWatch;
 
 exports.default = buildWatchAndServe;
+
+exports.test = require('./gulpfile/tests').testRollup

@@ -54,39 +54,26 @@ function compileScss_(config, done) {
 function compileJs_(config, done) {
 	const items = compiles_(config, '.js');
 	const tasks = [];
+	/*
 	items.forEach(item => {
 		tasks.push(function itemTask(done) {
 			return compileRollup_(config, item);
 		});
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
-}
-
-function compileRollup_(config, item) {
-	const outputs = rollupOutput_(item);
-	const minify = item.minify;
-	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
-		.pipe(plumber())
-		.pipe(rollup_(config, item))
-		/*
-		.pipe(rename(function(file) {
-			const output = outputs.find(x => {
-				// console.log('file', x.file, file.basename, x.file.indexOf(file.basename));
-				return x.file.indexOf(file.basename) !== -1;
+	*/
+	items.forEach(item => {
+		const outputs = rollupOutput_(item);
+		outputs.forEach((output, i) => {
+			// console.log(output);
+			tasks.push(function itemTask(done) {
+				const item_ = Object.assign(item, { output });
+				// console.log('item_', item_);
+				return compileRollup_(config, item_);
 			});
-			file.dirname = path.dirname(output.file);
-		}))
-		*/
-		.pipe(tfsCheckout(config))
-		.pipe(dest('.', minify ? null : { sourcemaps: '.' }))
-		.pipe(filter('**/*.js'))
-		.on('end', () => log('Compile', outputs.map(x => x.file).join(', ')))
-		.pipe(gulpif(minify, terser()))
-		.pipe(gulpif(minify, rename({ extname: '.min.js' })))
-		.pipe(tfsCheckout(config, !minify))
-		.pipe(gulpif(minify, dest('.', { sourcemaps: '.' })))
-		.pipe(filter('**/*.js'))
-		.pipe(connect.reload());
+		});
+	});
+	return tasks.length ? series(...tasks)(done) : done();
 }
 
 function compileTs_(config, done) {
@@ -121,6 +108,33 @@ function compileTs_(config, done) {
 		});
 	});
 	return tasks.length ? series(...tasks)(done) : done();
+}
+
+function compileRollup_(config, item) {
+	const outputs = rollupOutput_(item);
+	const minify = item.minify;
+	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
+		.pipe(plumber())
+		.pipe(rollup_(config, item))
+		/*
+		.pipe(rename(function(file) {
+			const output = outputs.find(x => {
+				// console.log('file', x.file, file.basename, x.file.indexOf(file.basename));
+				return x.file.indexOf(file.basename) !== -1;
+			});
+			file.dirname = path.dirname(output.file);
+		}))
+		*/
+		.pipe(tfsCheckout(config))
+		.pipe(dest('.', minify ? null : { sourcemaps: '.' }))
+		.pipe(filter('**/*.js'))
+		.on('end', () => log('Compile', outputs.map(x => x.file).join(', ')))
+		.pipe(gulpif(minify, terser()))
+		.pipe(gulpif(minify, rename({ extname: '.min.js' })))
+		.pipe(tfsCheckout(config, !minify))
+		.pipe(gulpif(minify, dest('.', { sourcemaps: '.' })))
+		.pipe(filter('**/*.js'))
+		.pipe(connect.reload());
 }
 
 function compileTypescript_(config, item) {

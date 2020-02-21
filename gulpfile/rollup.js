@@ -13,9 +13,6 @@ const { DEFAULT_EXTENSIONS } = require('@babel/core'),
 	vinyl = require('vinyl'),
 	vinylSourcemapsApply = require('vinyl-sourcemaps-apply');
 
-const babelInput = true;
-const babelOutput = !babelInput;
-
 // map object storing rollup cache objects for each input file
 let rollupCache = new Map();
 
@@ -82,7 +79,7 @@ function rollup_(config, item) {
 				if (i > 0) {
 					this.push(targetFile);
 				}
-				return targetFile;
+				return result;
 			}).catch(error => {
 				console.log('Rollup generate error', error);
 			});
@@ -98,7 +95,18 @@ function rollup_(config, item) {
 				return Promise.all(outputs.map((output, i) => rollupGenerate(bundle, output, i)));
 				// return bundle.write(outputs);
 			})
-			.then(() => callback(null, file)) // pass file to gulp and end stream
+			.then((results) => {
+				results.forEach(x => {
+					const outputs = x.output;
+					outputs.forEach(x => {
+						// !!! files to watch
+						const modules = Object.keys(x.modules);
+						// console.log(modules);
+						// console.log('output', x);
+					});
+				});
+				callback(null, file); // pass file to gulp and end stream
+			})
 			.catch(error => {
 				console.log('Rollup bundle error', error);
 				if (inputOptions.cache !== false) {
@@ -111,42 +119,48 @@ function rollup_(config, item) {
 }
 
 function rollupInput_(item) {
-	let babelTargets;
+	const presetEnvOptions = {
+		modules: false,
+		loose: true,
+	}
 	if ((typeof item.output === 'object' && item.output.format === 'esm') || item.target === 'esm') {
-		babelTargets = {
-			"esmodules": true
+		presetEnvOptions.targets = {
+			esmodules: true
 		};
 	} else {
-		babelTargets = item.target; // 'last 2 version, ie 11';
+		if (item.target) {
+			presetEnvOptions.targets = item.target; // || 'last 2 version, ie 11'; // readed from .browserslistrc
+		}
 	}
+	// console.log(item.output.file, item.output, item.target, presetEnvOptions);
 	const tsconfigDefaults = {
 		compilerOptions: {
 			target: 'esNext',
 			module: 'esNext',
-			lib: ["dom", "es2015", "es2016", "es2017"],
+			lib: ['dom', 'es2015', 'es2016', 'es2017'],
 			allowJs: true,
 			declaration: false,
 			sourceMap: true,
 			removeComments: true,
 		},
 		exclude: [
-			"./node_modules/*",
-			".npm"
+			'./node_modules/*',
+			'.npm'
 		]
 	};
 	const tsconfigOverride = {
 		compilerOptions: {
 			target: 'esNext',
 			module: 'esNext',
-			lib: ["dom", "es2015", "es2016", "es2017"],
+			lib: ['dom', 'es2015', 'es2016', 'es2017'],
 			allowJs: true,
 			declaration: false,
 			sourceMap: true,
 			removeComments: true,
 		},
 		exclude: [
-			"./node_modules/*",
-			".npm"
+			'./node_modules/*',
+			'.npm'
 		]
 	};
 	// const watchGlob = path.dirname(input) + '/**/*' + path.extname(input);
@@ -179,18 +193,14 @@ function rollupInput_(item) {
 			clean: true,
 			check: false,
 		}) : null,
-		babelInput ? rollupPluginBabel({
+		rollupPluginBabel({
 			extensions: [
 				...DEFAULT_EXTENSIONS,
 				'.ts',
 				'.tsx'
 			],
 			presets: [
-				['@babel/preset-env', {
-					modules: false,
-					loose: true,
-					targets: babelTargets
-				}],
+				['@babel/preset-env', presetEnvOptions],
 				// ['@babel/preset-typescript', { modules: false, loose: true }]
 			],
 			plugins: [
@@ -199,20 +209,21 @@ function rollupInput_(item) {
 			],
 			exclude: 'node_modules/**', // only transpile our source code
 			comments: false,
+			// babelHelpers: 'bundled', // only for version 5
 			// babelrc: false,
-		}) : null,
-		babelInput ? rollupPluginLicense({
+		}),
+		rollupPluginLicense({
 			banner: `@license <%= pkg.name %> v<%= pkg.version %>
 			(c) <%= moment().format('YYYY') %> <%= pkg.author %>
 			License: <%= pkg.license %>`,
-		}) : null,
+		}),
 
 	].filter(x => x);
 	input = {
 		input: item.input,
 		plugins: plugins,
 		external: item.external || [],
-		cache: true,
+		cache: false, // !! break babel if true
 		treeshake: true,
 		/*
 		watch: {
@@ -242,54 +253,6 @@ function rollupOutput_(item) {
 			output = Object.assign(output, x);
 		}
 		output.name = output.name || path.basename(output.file, '.js');
-		/*
-		const plugins = [
-			path.extname(input) === '.ts' ? rollupPluginTypescript2({
-				target: output.format === 'es' ? 'ESNext' : 'ES5',
-				module: output.format === 'es' ? 'ES6' : 'ES5',
-				moduleResolution: output.format === 'iife' ? 'classic' : 'node',
-				declaration: true
-			}) : null,
-		].filter(x => x);
-		output.plugins = plugins;
-		*/
-		let babelTargets;
-		if (output.format === 'esm' || item.target === 'esm') {
-			babelTargets = {
-				"esmodules": true
-			};
-		} else {
-			babelTargets = item.target;
-		}
-		output.plugins = [
-			babelOutput ? rollupPluginBabel({
-				extensions: [
-					...DEFAULT_EXTENSIONS,
-					'.ts',
-					'.tsx'
-				],
-				presets: [
-					['@babel/preset-env', {
-						modules: false,
-						loose: true,
-						targets: babelTargets
-					}],
-					// ['@babel/preset-typescript', { modules: false, loose: true }]
-				],
-				plugins: [
-					'@babel/plugin-proposal-class-properties',
-					'@babel/plugin-proposal-object-rest-spread'
-				],
-				exclude: 'node_modules/**', // only transpile our source code
-				comments: false,
-				// babelrc: false,
-			}) : null,
-			babelOutput ? rollupPluginLicense({
-				banner: `@license <%= pkg.name %> v<%= pkg.version %>
-				(c) <%= moment().format('YYYY') %> <%= pkg.author %>
-				License: <%= pkg.license %>`,
-			}) : null,
-		].filter(x => x);
 		return output;
 	});
 }
