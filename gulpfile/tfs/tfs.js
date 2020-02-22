@@ -1,12 +1,12 @@
 const fs = require('fs'),
-	gulpif = require('gulp-if'),
+	gulpIf = require('gulp-if'),
 	tfs = require('tfs'),
 	through2 = require('through2');
 
-const log = require('./logger');
+const log = require('../logger/logger');
 
 function tfsCheckout(config, skip) {
-	return gulpif(!skip && config.tfs,
+	return gulpIf(!skip && config.tfs,
 		through2.obj((file, enc, callback) => {
 			// console.log('TfsCheckout', file.path);
 			if (fs.existsSync(file.path)) {

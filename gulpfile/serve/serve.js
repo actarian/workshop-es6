@@ -1,10 +1,10 @@
-const connect = require('gulp-connect');
-const url = require('url');
+const gulpConnect = require('gulp-connect'),
+	url = require('url');
 
-const log = require('./logger');
+const log = require('../logger/logger');
 
 // SERVE
-function serve_(config, done) {
+function serve(config, done) {
 	if (config.server) {
 		const options = Object.assign({
 			name: 'Development',
@@ -24,11 +24,11 @@ function serve_(config, done) {
 					return context.parsedUrl.pathname.replace(options.path, '/');
 				}
 			}]
-		})
+		});
 		options.middleware = (connect, opt) => {
 			return [middleware];
-		}
-		connect.server(options, function() {
+		};
+		gulpConnect.server(options, function() {
 			this.server.on('close', done);
 		});
 	} else {
@@ -207,5 +207,5 @@ function serve_local_web_server_(config, done) {
 }
 
 module.exports = {
-	serve_,
+	serve,
 };

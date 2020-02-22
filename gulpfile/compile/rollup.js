@@ -13,6 +13,10 @@ const { DEFAULT_EXTENSIONS } = require('@babel/core'),
 	vinyl = require('vinyl'),
 	vinylSourcemapsApply = require('vinyl-sourcemaps-apply');
 
+const log = require('../logger/logger');
+
+const { setEntry } = require('../watch/watch');
+
 // map object storing rollup cache objects for each input file
 let rollupCache = new Map();
 
@@ -22,10 +26,10 @@ function rollup_(config, item) {
 			return callback(null, file);
 		}
 		if (file.isStream()) {
-			console.warn('Rollup, Streaming not supported');
+			log.error('rollup', 'streaming not supported');
 			return callback(null, file);
 		}
-		const inputOptions = rollupInput_(item);
+		const inputOptions = rollupInput(item);
 		// caching is enabled by default because of the nature of gulp and the watching/recompilatin
 		// but can be disabled by setting 'cache' to false
 		if (inputOptions.cache !== false) {
@@ -81,13 +85,13 @@ function rollup_(config, item) {
 				}
 				return result;
 			}).catch(error => {
-				console.log('Rollup generate error', error);
+				log.error('rollup', error);
 			});
 		};
 
 		rollup.rollup(inputOptions).then(bundle => {
 				// console.log(bundle);
-				const outputs = rollupOutput_(item);
+				const outputs = rollupOutput(item);
 				// console.log(outputs);
 				if (inputOptions.cache !== false) {
 					rollupCache.set(inputOptions.input, bundle);
@@ -99,16 +103,13 @@ function rollup_(config, item) {
 				results.forEach(x => {
 					const outputs = x.output;
 					outputs.forEach(x => {
-						// !!! files to watch
-						const modules = Object.keys(x.modules);
-						// console.log(modules);
-						// console.log('output', x);
+						setEntry(inputOptions.input, Object.keys(x.modules));
 					});
 				});
 				callback(null, file); // pass file to gulp and end stream
 			})
 			.catch(error => {
-				console.log('Rollup bundle error', error);
+				log.error('rollup', error);
 				if (inputOptions.cache !== false) {
 					rollupCache.delete(inputOptions.input);
 				}
@@ -118,11 +119,11 @@ function rollup_(config, item) {
 	});
 }
 
-function rollupInput_(item) {
+function rollupInput(item) {
 	const presetEnvOptions = {
 		modules: false,
 		loose: true,
-	}
+	};
 	if ((typeof item.output === 'object' && item.output.format === 'esm') || item.target === 'esm') {
 		presetEnvOptions.targets = {
 			esmodules: true
@@ -234,7 +235,7 @@ function rollupInput_(item) {
 	return input;
 }
 
-function rollupOutput_(item) {
+function rollupOutput(item) {
 	const input = item.input;
 	const output = item.output;
 	const outputs = Array.isArray(output) ? output : [output];
@@ -258,7 +259,7 @@ function rollupOutput_(item) {
 }
 
 module.exports = {
-	rollup_,
-	rollupInput_,
-	rollupOutput_,
+	rollup: rollup_,
+	rollupInput,
+	rollupOutput,
 };

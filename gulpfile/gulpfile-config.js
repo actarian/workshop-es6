@@ -1,65 +1,89 @@
+const path = require('path');
 const { parallel, series } = require('gulp');
-const { compileScss_, compileJs_, compileTs_, compileHtml_, compileWatcher_, compileCssWatcher_, compileJsWatcher_ } = require('./compile');
-const { bundleCss_, bundleJs_, bundleResource_, bundleWatcher_, bundleCssWatcher_, bundleJsWatcher_ } = require('./bundle');
-const { serve_ } = require('./serve');
-const { getConfig, configWatcher_ } = require('./config');
+const { compileScss, compileJs, compileTs, compileHtml, compileWatcher, compileCssWatcher, compileJsWatcher } = require('./compile/compile');
+const { bundleCss, bundleJs, bundleResource, bundleWatcher, bundleCssWatcher, bundleJsWatcher } = require('./bundle/bundle');
+const { serve } = require('./serve/serve');
+const { getConfig, configWatcher } = require('./config/config');
+const { watchEntries } = require('./watch/watch');
 
 let config = getConfig();
 
 // COMPILERS
-function compileScss(done) {
-	return compileScss_(config, done);
+function compileScssSubTask(done) {
+	return compileScss(config, done);
 }
 
-function compileJs(done) {
-	return compileJs_(config, done);
+function compileJsSubTask(done) {
+	return compileJs(config, done);
 }
 
-function compileTs(done) {
-	return compileTs_(config, done);
+function compileTsSubTask(done) {
+	return compileTs(config, done);
 }
 
-function compileHtml(done) {
-	return compileHtml_(config, done);
+function compileHtmlSubTask(done) {
+	return compileHtml(config, done);
 }
 
-const compileTask = parallel(compileScss, compileJs, compileTs, compileHtml); // compilePartials, compileSnippets
+const compileTask = parallel(compileScssSubTask, compileJsSubTask, compileTsSubTask, compileHtmlSubTask); // compilePartials, compileSnippets
 
-const compileCssTask = parallel(compileScss);
+const compileCssTask = parallel(compileScssSubTask);
 
-const compileJsTask = parallel(compileJs, compileTs);
+const compileJsTask = parallel(compileJsSubTask, compileTsSubTask);
 
 // BUNDLERS
-function bundleCss(done) {
-	return bundleCss_(config, done);
+function bundleCssTask(done) {
+	return bundleCss(config, done);
 }
 
-function bundleJs(done) {
-	return bundleJs_(config, done);
+function bundleJsTask(done) {
+	return bundleJs(config, done);
 }
 
-function bundleResource(done) {
-	return bundleResource_(config, done);
+function bundleResourceTask(done) {
+	return bundleResource(config, done);
 }
 
-const bundleTask = parallel(bundleCss, bundleJs, bundleResource);
+const bundleTask = parallel(bundleCssTask, bundleJsTask, bundleResourceTask);
 
 // WATCH
+
+const watchTask = false ? watchTask_1 : watchTask_2;
+
+function watchTask_1(done) {
+	watchEntries((entry, done) => {
+		config.target.compile.forEach(x => {
+			if (entry.indexOf(x.input) !== -1) {
+				const ext = path.extname(entry);
+				console.log('compile', ext, x);
+			}
+		});
+		config.target.bundle.forEach(x => {
+			if (entry.indexOf(x.output) !== -1) {
+				const ext = path.extname(entry);
+				console.log('bundle', ext, x);
+			}
+		});
+	});
+	return done();
+}
+
 let watchers = [];
 
-function watchTask(done) {
+function watchTask_2(done) {
 	while (watchers.length) {
 		const w = watchers.shift();
 		if (typeof w.close === 'function') {
 			w.close();
 		}
 	}
-	const compileWatcher = compileWatcher_(config);
-	const bundleWatcher = bundleWatcher_(config);
-	const configWatcher = configWatcher_(function(done) {
+	const compileWatcherTask = compileWatcher(config);
+	const bundleWatcherTask = bundleWatcher(config);
+	const configWatcherTask = configWatcher(function(done) {
+		config = getConfig();
 		return series(compileTask, bundleTask, watchTask)(done);
 	});
-	watchers = [].concat(compileWatcher, bundleWatcher, configWatcher);
+	watchers = [].concat(compileWatcherTask, bundleWatcherTask, configWatcherTask);
 	done();
 }
 
@@ -70,12 +94,12 @@ function watchCssTask(done) {
 			w.close();
 		}
 	}
-	const compileCssWatcher = compileCssWatcher_(config);
-	const bundleCssWatcher = bundleCssWatcher_(config);
-	const configWatcher = configWatcher_(function(done) {
-		return series(compileCssTask, bundleCss, watchCssTask)(done);
+	const compileCssWatcherTask = compileCssWatcher(config);
+	const bundleCssWatcherTask = bundleCssWatcher(config);
+	const configWatcherTask = configWatcher(function(done) {
+		return series(compileCssTask, bundleCssTask, watchCssTask)(done);
 	});
-	watchers = [].concat(compileCssWatcher, bundleCssWatcher, configWatcher);
+	watchers = [].concat(compileCssWatcherTask, bundleCssWatcherTask, configWatcherTask);
 	done();
 }
 
@@ -86,18 +110,18 @@ function watchJsTask(done) {
 			w.close();
 		}
 	}
-	const compileJsWatcher = compileJsWatcher_(config);
-	const bundleJsWatcher = bundleJsWatcher_(config);
-	const configWatcher = configWatcher_(function(done) {
-		return series(compileJsTask, bundleJs, watchTask)(done);
+	const compileJsWatcherSubTask = compileJsWatcher(config);
+	const bJsWatcher = bundleJsWatcher(config);
+	const configWatcherTask = configWatcher(function(done) {
+		return series(compileJsTask, bundleJsTask, watchTask)(done);
 	});
-	watchers = [].concat(compileJsWatcher, bundleJsWatcher, configWatcher);
+	watchers = [].concat(compileJsWatcherSubTask, bJsWatcher, configWatcherTask);
 	done();
 }
 
 // SERVE
 function serveTask(done) {
-	return serve_(config, done);
+	return serve(config, done);
 }
 
 // UTILS
@@ -120,9 +144,9 @@ exports.bundle = bundleTask;
 exports.watch = watchTask;
 exports.serve = serveTask;
 exports.build = series(compileTask, bundleTask);
-exports.buildCss = series(compileCssTask, bundleCss);
-exports.buildCssAndWatch = series(compileCssTask, bundleCss, watchCssTask);
-exports.buildJs = series(compileJsTask, bundleJs);
-exports.buildJsAndWatch = series(compileJsTask, bundleJs, watchJsTask);
+exports.buildCss = series(compileCssTask, bundleCssTask);
+exports.buildCssAndWatch = series(compileCssTask, bundleCssTask, watchCssTask);
+exports.buildJs = series(compileJsTask, bundleJsTask);
+exports.buildJsAndWatch = series(compileJsTask, bundleJsTask, watchJsTask);
 exports.buildAndWatch = series(compileTask, bundleTask, watchTask);
 exports.buildWatchAndServe = series(compileTask, bundleTask, watchTask, serveTask);

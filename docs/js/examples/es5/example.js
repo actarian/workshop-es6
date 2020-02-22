@@ -44,6 +44,6 @@ Example.prototype = {
 		console.log(action, value);
 		document.querySelector('.output').innerHTML += action + ': ' + value + '<br />';
 	}
-}
+};
 
 var example = new Example();
