@@ -14,13 +14,14 @@ const { DEFAULT_EXTENSIONS } = require('@babel/core'),
 	vinylSourcemapsApply = require('vinyl-sourcemaps-apply');
 
 const log = require('../logger/logger');
+const { service } = require('../config/config');
 
 const { setEntry } = require('../watch/watch');
 
 // map object storing rollup cache objects for each input file
 let rollupCache = new Map();
 
-function rollup_(config, item) {
+function rollup_(item) {
 	return through2.obj(function(file, enc, callback) {
 		if (file.isNull()) {
 			return callback(null, file);

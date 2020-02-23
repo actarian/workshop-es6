@@ -5,6 +5,7 @@ const nodeSass = require('node-sass'),
 	vinylSourcemapsApply = require('vinyl-sourcemaps-apply');
 
 const log = require('../logger/logger');
+const { service } = require('../config/config');
 
 const { setEntry } = require('../watch/watch');
 

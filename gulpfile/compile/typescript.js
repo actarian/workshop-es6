@@ -10,6 +10,8 @@ const typescript = require('typescript'),
 	vinyl = require('vinyl'),
 	vinylSourcemapsApply = require('vinyl-sourcemaps-apply');
 
+const log = require('../logger/logger');
+const { service } = require('../config/config');
 const { getObject, extend } = require('../config/json');
 
 const { rollup, rollupInput, rollupOutput } = require('./rollup');
@@ -30,15 +32,15 @@ const TypescriptModule = ["CommonJS", "AMD", "System", "UMD", "ES6", "ES2015", "
 
 // compile('tsconfig.json');
 
-function typescript_(config, item) {
+function typescript_(item) {
 	const output = typescriptOutput(item)[0];
 	switch (output.format) {
 		case 'iife':
 		case 'umd':
-			return rollup(config, item);
+			return rollup(item);
 			break;
 		default:
-			return typescriptLib(config, item, output);
+			return typescriptLib(item, output);
 	}
 	/*
 	'iife': 'iife', // A self-executing function, suitable for inclusion as a <script> tag. (If you want to create a bundle for your application, you probably want to use this.)
@@ -51,7 +53,7 @@ function typescript_(config, item) {
 	*/
 }
 
-function typescriptLib(config, item, output) {
+function typescriptLib(item, output) {
 	return through2.obj(function(file, enc, callback) {
 		// console.log('TfsCheckout', file.path);
 		if (file.isNull()) {

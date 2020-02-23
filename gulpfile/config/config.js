@@ -12,6 +12,10 @@ const CONFIG_PATH = './gulpfile-config.json';
 const options = getOptions();
 const target = options.target || 'browser';
 
+const service = {
+	options,
+};
+
 function getOptions() {
 	let key = undefined;
 	const o = process.argv.reduce((p, c, a) => {
@@ -57,9 +61,12 @@ function getConfig() {
 	};
 	const config = getObject(CONFIG_PATH, configDefault);
 	config.target = config.targets[target] || getTarget();
+	service.target = target;
+	service.config = config.target;
 	return config;
 }
 
+/*
 function configWatcher(callback) {
 	const configWatch = watch(CONFIG_PATH, function config(done) {
 		// config = getConfig();
@@ -73,10 +80,11 @@ function configWatcher(callback) {
 function logWatch(path, stats) {
 	log('Changed', path);
 }
+*/
 
 module.exports = {
-	path,
+	CONFIG_PATH,
 	getConfig: getConfig,
 	target: target,
-	configWatcher: configWatcher
+	service: service,
 };

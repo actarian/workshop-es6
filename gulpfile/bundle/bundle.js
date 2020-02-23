@@ -10,20 +10,37 @@ const cssnano = require('cssnano'),
 const { dest, parallel, src, watch } = require('gulp');
 
 const log = require('../logger/logger');
+const { service } = require('../config/config');
 const tfsCheckout = require('../tfs/tfs');
 const { setEntry } = require('../watch/watch');
 
+function bundle(item, ext, done) {
+	// console.log('bundle', ext, item);
+	let task;
+	switch (ext) {
+		case '.scss':
+			task = bundleCssItem(item);
+			break;
+		case '.js':
+			task = bundleJsItem(item);
+			break;
+		default:
+			// task = bundleResourceItem(item);
+	}
+	return task ? task : (typeof done === 'function' ? done() : null);
+}
+
 // BUNDLE CSS
-function bundleCss(config, done) {
-	const items = bundles(config, '.css');
+function bundleCss(done) {
+	const items = bundles('.css');
 	const tasks = items.map(item => function itemTask(done) {
-		setEntry(item.output, item.input);
-		return bundleCssItem(config, item);
+		setEntry(item.output, Array.isArray(item.input) ? item.input : [item.input]);
+		return bundleCssItem(item);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function bundleCssItem(config, item) {
+function bundleCssItem(item) {
 	const skip = item.input.length === 1 && item.input[0] === item.output;
 	const plugins = [
 		// autoprefixer({browsers: ['last 1 version']}),
@@ -32,92 +49,94 @@ function bundleCssItem(config, item) {
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(gulpPlumber())
 		.pipe(gulpIf(!skip, gulpConcat(item.output)))
-		.pipe(tfsCheckout(config, skip))
+		.pipe(tfsCheckout(skip))
 		.pipe(gulpIf(!skip, dest('.')))
 		.on('end', () => log('Bundle', item.output))
 		.pipe(gulpIf(item.minify, gulpPostcss(plugins)))
 		.pipe(gulpIf(item.minify, gulpRename({ extname: '.min.css' })))
-		.pipe(tfsCheckout(config, !item.minify))
+		.pipe(tfsCheckout(!item.minify))
 		.pipe(gulpIf(item.minify, dest('.', { sourcemaps: '.' })))
 		.pipe(gulpFilter('**/*.css'));
 }
 
 // BUNDLE JS
-function bundleJs(config, done) {
-	const items = bundles(config, '.js');
+function bundleJs(done) {
+	// console.log('service', service, service.config.bundle[0]);
+	const items = bundles('.js');
 	const tasks = items.map(item => function itemTask(done) {
-		setEntry(item.output, item.input);
-		return bundleJsItem(config, item);
+		setEntry(item.output, Array.isArray(item.input) ? item.input : [item.input]);
+		return bundleJsItem(item);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function bundleJsItem(config, item) {
+function bundleJsItem(item) {
 	const skip = item.input.length === 1 && item.input[0] === item.output;
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(gulpPlumber())
 		.pipe(gulpIf(!skip, gulpConcat(item.output)))
-		.pipe(tfsCheckout(config, skip))
+		.pipe(tfsCheckout(skip))
 		.pipe(gulpIf(!skip, dest('.')))
 		.on('end', () => log('Bundle', item.output))
 		.pipe(gulpIf(item.minify, gulpTerser()))
 		.pipe(gulpIf(item.minify, gulpRename({ extname: '.min.js' })))
-		.pipe(tfsCheckout(config, !item.minify))
+		.pipe(tfsCheckout(!item.minify))
 		.pipe(gulpIf(item.minify, dest('.', { sourcemaps: '.' })))
 		.pipe(gulpFilter('**/*.js'));
 }
 
 // BUNDLE RESOURCE
-function bundleResource(config, done) {
-	const items = resources(config);
+function bundleResource(done) {
+	const items = resources(service.config);
 	const tasks = items.map(item => function itemTask(done) {
-		return bundleResourceItem(config, item);
+		return bundleResourceItem(item);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function bundleResourceItem(config, item) {
+function bundleResourceItem(item) {
 	const skip = item.input.length === 1 && item.input[0] === item.output;
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: false })
 		.pipe(gulpPlumber())
 		.pipe(gulpRename({ dirname: item.output }))
 		.pipe(gulpIf(!skip, dest('.')))
-		.pipe(tfsCheckout(config, skip))
+		.pipe(tfsCheckout(skip))
 		.on('end', () => log('Bundle', item.output));
 }
 
+/*
 function bundleWatcher(config) {
-	const css = bundles(config, '.css').map((item) => {
+	const css = bundles('.css').map((item) => {
 		return watch(item.input, function bundleCss_(done) {
-			return bundleCssItem(config, item);
+			return bundleCssItem(item);
 		}).on('change', logWatch);
 	});
-	const js = bundles(config, '.js').map((item) => {
+	const js = bundles('.js').map((item) => {
 		return watch(item.input, function bundleJs_(done) {
-			return bundleJsItem(config, item);
+			return bundleJsItem(item);
 		}).on('change', logWatch);
 	});
-	const resource = resources(config).map((item) => {
+	const resource = resources(service.config).map((item) => {
 		return watch(item.input, function bundleResource_(done) {
-			return bundleResourceItem(config, item);
+			return bundleResourceItem(item);
 		}).on('change', logWatch);
 	});
 	return [css, js, resource];
 }
 
 function bundleCssWatcher(config) {
-	const css = bundles(config, '.css').map((item) => {
+	const css = bundles('.css').map((item) => {
 		return watch(item.input, function bundleCss_(done) {
-			return bundleCssItem(config, item);
+			return bundleCssItem(item);
 		}).on('change', logWatch);
 	});
 	return [css];
 }
 
 function bundleJsWatcher(config) {
-	const js = bundles(config, '.js').map((item) => {
+	const js = bundles('.js').map((item) => {
 		return watch(item.input, function bundleJs_(done) {
-			return bundleJsItem(config, item);
+			return bundleJsItem(item);
 		}).on('change', logWatch);
 	});
 	return [js];
@@ -126,10 +145,11 @@ function bundleJsWatcher(config) {
 function logWatch(path, stats) {
 	log('Changed', path);
 }
+*/
 
-function bundles(config, ext) {
-	if (config.target) {
-		return config.target.bundle.filter((item) => {
+function bundles(ext) {
+	if (service.config) {
+		return service.config.bundle.filter((item) => {
 			if (ext && item.output) {
 				return new RegExp(`${ext}$`).test(item.output);
 			} else {
@@ -141,15 +161,16 @@ function bundles(config, ext) {
 	}
 }
 
-function resources(config) {
-	if (config.target) {
-		return config.target.resource || [];
+function resources() {
+	if (service.config) {
+		return service.config.resource || [];
 	} else {
 		return [];
 	}
 }
 
 module.exports = {
+	bundle,
 	bundleCss,
 	bundleCssItem,
 	bundleJs,
@@ -158,7 +179,4 @@ module.exports = {
 	bundleResourceItem,
 	bundles,
 	resources,
-	bundleWatcher,
-	bundleCssWatcher,
-	bundleJsWatcher
 };

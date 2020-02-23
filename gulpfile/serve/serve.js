@@ -2,10 +2,11 @@ const gulpConnect = require('gulp-connect'),
 	url = require('url');
 
 const log = require('../logger/logger');
+const { service } = require('../config/config');
 
 // SERVE
-function serve(config, done) {
-	if (config.server) {
+function serve(done) {
+	if (service.config.server) {
 		const options = Object.assign({
 			name: 'Development',
 			root: './docs',
@@ -14,7 +15,7 @@ function serve(config, done) {
 			https: false,
 			path: '/',
 			livereload: true,
-		}, config.server || {});
+		}, service.config.server || {});
 		options.fallback = `${options.path}index.html`;
 		const middleware = middleware_({
 			logger: options.log ? log : undefined,
@@ -152,9 +153,8 @@ function getLogger(options) {
 	return function() {};
 }
 
-function serve_local_web_server_(config, done) {
-	if (config.server) {
-
+function serve_local_web_server_(done) {
+	if (service.config.server) {
 		const options = Object.assign({
 			directory: './docs',
 			port: 8001,
@@ -165,17 +165,14 @@ function serve_local_web_server_(config, done) {
 			fallback: 'index.html',
 			livereload: true,
 			open: true,
-		}, config.server || {});
-
+		}, service.config.server || {});
 		if (options.path !== '/') {
 			options.rewrite = [{
 				from: options.path + '*',
 				to: options.https ? 'https' : 'http' + '://' + options.host + '/$1',
 			}];
 		}
-
 		log(options.rewrite);
-
 		/*
 		this.port = 8000
 		this.hostname = '0.0.0.0'

@@ -13,22 +13,45 @@ const cssnano = require('cssnano'),
 
 const { dest, parallel, series, src, watch } = require('gulp');
 
+const { setEntry } = require('../watch/watch');
+
 const log = require('../logger/logger');
+const { service } = require('../config/config');
 const tfsCheckout = require('../tfs/tfs');
 const { sass } = require('./sass');
 
 const { rollup, rollupInput, rollupOutput } = require('./rollup');
 const { typescript, typescriptInput, typescriptOutput } = require('./typescript');
 
-function compileScss(config, done) {
-	const items = compiles(config, '.scss');
+function compile(item, ext, done) {
+	// console.log('compile', ext, item);
+	let task;
+	switch (ext) {
+		case '.scss':
+			task = compileScssItem(item);
+			break;
+		case '.js':
+			task = compileJsItem(item);
+			break;
+		case '.ts':
+			task = compileTsItem(item);
+			break;
+		case '.html':
+			task = compileHtmlItem(item);
+			break;
+	}
+	return task ? task : (typeof done === 'function' ? done() : null);
+}
+
+function compileScss(done) {
+	const items = compiles('.scss');
 	const tasks = items.map(item => function itemTask() {
-		return compileScssItem(config, item);
+		return compileScssItem(item);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function compileScssItem(config, item) {
+function compileScssItem(item) {
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(gulpPlumber())
 		.pipe(sass({
@@ -38,7 +61,7 @@ function compileScssItem(config, item) {
 		}))
 		.pipe(gulpAutoprefixer())
 		.pipe(gulpRename(item.output))
-		.pipe(tfsCheckout(config))
+		.pipe(tfsCheckout())
 		.pipe(dest('.', item.minify ? null : { sourcemaps: '.' }))
 		.pipe(gulpFilter('**/*.css'))
 		.on('end', () => log('Compile', item.output))
@@ -47,21 +70,21 @@ function compileScssItem(config, item) {
 			cssnano()
 		])))
 		.pipe(gulpIf(item.minify, gulpRename({ extname: '.min.css' })))
-		.pipe(tfsCheckout(config, !item.minify))
+		.pipe(tfsCheckout(!item.minify))
 		.pipe(gulpIf(item.minify, dest('.', { sourcemaps: '.' })))
 		.pipe(gulpFilter('**/*.css'))
 		.pipe(gulpConnect.reload());
 }
 
-function compileJs(config, done) {
-	const items = compiles(config, '.js');
+function compileJs(done) {
+	const items = compiles('.js');
 	const tasks = items.map(item => function itemTask(done) {
-		return compileJsItem(config, item, done);
+		return compileJsItem(item, done);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function compileJsItem(config, item, done) {
+function compileJsItem(item, done) {
 	const tasks = [];
 	const outputs = rollupOutput(item);
 	outputs.forEach((output, i) => {
@@ -69,21 +92,21 @@ function compileJsItem(config, item, done) {
 		tasks.push(function itemTask(done) {
 			const item_ = Object.assign({}, item, { output });
 			// console.log('item_', item_);
-			return compileRollup(config, item_);
+			return compileRollup(item_);
 		});
 	});
 	return tasks.length ? series(...tasks)(done) : done();
 }
 
-function compileTs(config, done) {
-	const items = compiles(config, '.ts');
+function compileTs(done) {
+	const items = compiles('.ts');
 	const tasks = items.map(item => function itemTask(done) {
-		return compileTsItem(config, item, done);
+		return compileTsItem(item, done);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function compileTsItem(config, item, done) {
+function compileTsItem(item, done) {
 	const tasks = [];
 	const outputs = typescriptOutput(item);
 	outputs.forEach((output, i) => {
@@ -95,10 +118,10 @@ function compileTsItem(config, item, done) {
 			switch (output_.format) {
 				case 'iife':
 				case 'umd':
-					return compileRollup(config, item_);
+					return compileRollup(item_);
 					break;
 				default:
-					return compileTypescript(config, item_);
+					return compileTypescript(item_);
 			}
 			/*
 			'iife': 'iife', // A self-executing function, suitable for inclusion as a <script> tag. (If you want to create a bundle for your application, you probably want to use this.)
@@ -108,21 +131,22 @@ function compileTsItem(config, item, done) {
 			'esm': 'esm', // Keep the bundle as an ES module file, suitable for other bundlers and inclusion as a <script type=module> tag in modern browsers
 			'system': 'system', // Native format of the SystemJS loader
 			*/
-			return compileTypescript(config, item_);
+			return compileTypescript(item_);
 		});
 	});
 	return tasks.length ? series(...tasks)(done) : done();
 }
 
-function compileHtml(config, done) {
-	const items = compiles(config, '.html');
+function compileHtml(done) {
+	const items = compiles('.html');
 	const tasks = items.map(item => function itemTask() {
-		return compileHtmlItem(config, item);
+		return compileHtmlItem(item);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function compileHtmlItem(config, item) {
+function compileHtmlItem(item) {
+	setEntry(item.input, path.extname(item.input));
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(gulpPlumber())
 		.pipe(gulpHtmlExtend({ annotations: true, verbose: false }))
@@ -134,18 +158,18 @@ function compileHtmlItem(config, item) {
 				extname: path.extname,
 			};
 		}))
-		.pipe(tfsCheckout(config))
+		.pipe(tfsCheckout())
 		.pipe(dest('.'))
 		.on('end', () => log('Compile', item.output))
 		.pipe(gulpConnect.reload());
 }
 
-function compileRollup(config, item) {
+function compileRollup(item) {
 	const outputs = rollupOutput(item);
 	const minify = item.minify;
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(gulpPlumber())
-		.pipe(rollup(config, item))
+		.pipe(rollup(item))
 		/*
 		.pipe(gulpRename(function(file) {
 			const output = outputs.find(x => {
@@ -155,27 +179,27 @@ function compileRollup(config, item) {
 			file.dirname = path.dirname(output.file);
 		}))
 		*/
-		.pipe(tfsCheckout(config))
+		.pipe(tfsCheckout())
 		.pipe(dest('.', minify ? null : { sourcemaps: '.' }))
 		.pipe(gulpFilter('**/*.js'))
 		.on('end', () => log('Compile', outputs.map(x => x.file).join(', ')))
 		.pipe(gulpIf(minify, gulpTerser()))
 		.pipe(gulpIf(minify, gulpRename({ extname: '.min.js' })))
-		.pipe(tfsCheckout(config, !minify))
+		.pipe(tfsCheckout(!minify))
 		.pipe(gulpIf(minify, dest('.', { sourcemaps: '.' })))
 		.pipe(gulpFilter('**/*.js'))
 		.pipe(gulpConnect.reload());
 }
 
-function compileTypescript(config, item) {
+function compileTypescript(item) {
 	const outputs = typescriptOutput(item);
 	const minify = outputs[0].minify;
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: true })
 		.pipe(gulpPlumber())
-		.pipe(typescript(config, item))
+		.pipe(typescript(item))
 		/*
 		// .pipe(gulpRename(item.output))
-		.pipe(tfsCheckout(config))
+		.pipe(tfsCheckout())
 		.pipe(dest('.', minify ? null : { sourcemaps: '.' }))
 		*/
 		.pipe(gulpFilter('**/*.js'))
@@ -183,42 +207,43 @@ function compileTypescript(config, item) {
 		/*
 		.pipe(gulpIf(minify, gulpTerser()))
 		.pipe(gulpIf(minify, gulpRename({ extname: '.min.js' })))
-		.pipe(tfsCheckout(config, !minify))
+		.pipe(tfsCheckout(!minify))
 		.pipe(gulpIf(minify, dest('.', { sourcemaps: '.' })))
 		*/
 		.pipe(gulpFilter('**/*.js'))
 		.pipe(gulpConnect.reload());
 }
 
-function compileWatcher(config) {
-	const scss = watch(globs(config, '.scss'), function compileScss_(done) {
-		compileScss(config, done);
+/*
+function compileWatcher() {
+	const scss = watch(globs('.scss'), function compileScss_(done) {
+		compileScss(done);
 	}).on('change', logWatch);
-	const js = watch(globs(config, '.js'), function compileJs_(done) {
-		compileJs(config, done);
+	const js = watch(globs('.js'), function compileJs_(done) {
+		compileJs(done);
 	}).on('change', logWatch);
-	const ts = watch(globs(config, '.ts'), function compileTs_(done) {
-		compileTs(config, done);
+	const ts = watch(globs('.ts'), function compileTs_(done) {
+		compileTs(done);
 	}).on('change', logWatch);
-	const html = watch(globs(config, '.html'), function compileHtml_(done) {
-		compileHtml(config, done);
+	const html = watch(globs('.html'), function compileHtml_(done) {
+		compileHtml(done);
 	}).on('change', logWatch);
 	return [scss, js, ts, html];
 }
 
-function compileCssWatcher(config) {
-	const scss = watch(globs(config, '.scss'), function compileScss_(done) {
-		compileScss(config, done);
+function compileCssWatcher() {
+	const scss = watch(globs('.scss'), function compileScss_(done) {
+		compileScss(done);
 	}).on('change', logWatch);
 	return [scss];
 }
 
-function compileJsWatcher(config) {
-	const js = watch(globs(config, '.js'), function compileJs_(done) {
-		compileJs(config, done);
+function compileJsWatcher() {
+	const js = watch(globs('.js'), function compileJs_(done) {
+		compileJs(done);
 	}).on('change', logWatch);
-	const ts = watch(globs(config, '.ts'), function compileTs_(done) {
-		compileTs(config, done);
+	const ts = watch(globs('.ts'), function compileTs_(done) {
+		compileTs(done);
 	}).on('change', logWatch);
 	return [js, ts];
 }
@@ -226,10 +251,11 @@ function compileJsWatcher(config) {
 function logWatch(path, stats) {
 	log('Changed', path);
 }
+*/
 
-function compiles(config, ext) {
-	if (config) {
-		return config.target.compile.filter((item) => {
+function compiles(ext) {
+	if (service.config) {
+		return service.config.compile.filter((item) => {
 			return new RegExp(`${ext}$`).test(item.input);
 		});
 	} else {
@@ -237,13 +263,14 @@ function compiles(config, ext) {
 	}
 }
 
-function globs(config, ext) {
-	return compiles(config, ext).map(x => {
+function globs(ext) {
+	return compiles(ext).map(x => {
 		return x.input.replace(/\/[^\/]*$/, '/**/*' + ext);
 	});
 }
 
 module.exports = {
+	compile,
 	compileScss,
 	compileScssItem,
 	compileJs,
@@ -251,7 +278,4 @@ module.exports = {
 	compileTs,
 	compileTsItem,
 	compileHtml,
-	compileWatcher,
-	compileCssWatcher,
-	compileJsWatcher
 };
