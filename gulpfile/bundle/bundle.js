@@ -24,8 +24,6 @@ function bundle(item, ext, done) {
 		case '.js':
 			task = bundleJsItem(item);
 			break;
-		default:
-			// task = bundleResourceItem(item);
 	}
 	return task ? task : (typeof done === 'function' ? done() : null);
 }
@@ -85,25 +83,6 @@ function bundleJsItem(item) {
 		.pipe(gulpFilter('**/*.js'));
 }
 
-// BUNDLE RESOURCE
-function bundleResource(done) {
-	const items = resources(service.config);
-	const tasks = items.map(item => function itemTask(done) {
-		return bundleResourceItem(item);
-	});
-	return tasks.length ? parallel(...tasks)(done) : done();
-}
-
-function bundleResourceItem(item) {
-	const skip = item.input.length === 1 && item.input[0] === item.output;
-	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: false })
-		.pipe(gulpPlumber())
-		.pipe(gulpRename({ dirname: item.output }))
-		.pipe(gulpIf(!skip, dest('.')))
-		.pipe(tfsCheckout(skip))
-		.on('end', () => log('Bundle', item.output));
-}
-
 /*
 function bundleWatcher(config) {
 	const css = bundles('.css').map((item) => {
@@ -114,11 +93,6 @@ function bundleWatcher(config) {
 	const js = bundles('.js').map((item) => {
 		return watch(item.input, function bundleJs_(done) {
 			return bundleJsItem(item);
-		}).on('change', logWatch);
-	});
-	const resource = resources(service.config).map((item) => {
-		return watch(item.input, function bundleResource_(done) {
-			return bundleResourceItem(item);
 		}).on('change', logWatch);
 	});
 	return [css, js, resource];
@@ -161,22 +135,11 @@ function bundles(ext) {
 	}
 }
 
-function resources() {
-	if (service.config) {
-		return service.config.resource || [];
-	} else {
-		return [];
-	}
-}
-
 module.exports = {
 	bundle,
 	bundleCss,
 	bundleCssItem,
 	bundleJs,
 	bundleJsItem,
-	bundleResource,
-	bundleResourceItem,
 	bundles,
-	resources,
 };
