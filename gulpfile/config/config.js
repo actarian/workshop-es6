@@ -51,18 +51,20 @@ function getConfig() {
 			browser: getTarget(),
 			dist: getTarget()
 		},
-		tfs: false,
 		server: {
 			src: './docs',
 			path: '/gulpfile-config/',
 			host: 'localhost',
 			port: 40900
-		}
+		},
+		tfs: false
 	};
 	const config = getObject(CONFIG_PATH, configDefault);
 	config.target = config.targets[target] || getTarget();
 	service.target = target;
 	service.config = config.target;
+	service.config.server = config.server;
+	service.config.tfs = config.tfs;
 	return config;
 }
 

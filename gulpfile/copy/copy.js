@@ -9,25 +9,25 @@ const { service } = require('../config/config');
 const tfsCheckout = require('../tfs/tfs');
 const { setEntry } = require('../watch/watch');
 
-function resource(item, ext, done) {
-	// console.log('resource', ext, item);
+function copy(item, ext, done) {
+	// console.log('copy', ext, item);
 	let task;
 	switch (ext) {
 		default:
-			task = resourceItemTask(item);
+			task = copyItemTask(item);
 	}
 	return task ? task : (typeof done === 'function' ? done() : null);
 }
 
-function resourceTask(done) {
-	const items = resources(service.config);
+function copyTask(done) {
+	const items = copies(service.config);
 	const tasks = items.map(item => function itemTask(done) {
-		return resourceItemTask(item);
+		return copyItemTask(item);
 	});
 	return tasks.length ? parallel(...tasks)(done) : done();
 }
 
-function resourceItemTask(item) {
+function copyItemTask(item) {
 	const skip = item.input.length === 1 && item.input[0] === item.output;
 	return src(item.input, { base: '.', allowEmpty: true, sourcemaps: false })
 		.pipe(gulpPlumber())
@@ -37,17 +37,17 @@ function resourceItemTask(item) {
 		.on('end', () => log('Bundle', item.output));
 }
 
-function resources() {
+function copies() {
 	if (service.config) {
-		return service.config.resource || [];
+		return service.config.copy || [];
 	} else {
 		return [];
 	}
 }
 
 module.exports = {
-	resource,
-	resourceTask,
-	resourceItemTask,
-	resources,
+	copy,
+	copyTask,
+	copyItemTask,
+	copies,
 };

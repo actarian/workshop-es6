@@ -95,7 +95,7 @@ function bundleWatcher(config) {
 			return bundleJsItem(item);
 		}).on('change', logWatch);
 	});
-	return [css, js, resource];
+	return [css, js];
 }
 
 function bundleCssWatcher(config) {
@@ -124,11 +124,7 @@ function logWatch(path, stats) {
 function bundles(ext) {
 	if (service.config) {
 		return service.config.bundle.filter((item) => {
-			if (ext && item.output) {
-				return new RegExp(`${ext}$`).test(item.output);
-			} else {
-				return ext === 'resource' && !item.output;
-			}
+			return new RegExp(`${ext}$`).test(item.output);
 		});
 	} else {
 		return [];
