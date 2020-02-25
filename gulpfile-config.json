@@ -8,6 +8,11 @@
 					"minify": true
 				},
 				{
+					"input": "src/templates/emails/*.mjml",
+					"output": "docs/templates/emails/",
+					"minify": false
+				},
+				{
 					"input": "src/css/main.scss",
 					"output": "docs/css/main.css",
 					"minify": true
