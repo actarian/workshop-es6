@@ -6,44 +6,44 @@
 					"input": "src/*.html",
 					"output": "docs/",
 					"minify": true
-				},
+        },
 				{
 					"input": "src/templates/emails/*.mjml",
 					"output": "docs/templates/emails/",
 					"minify": false
-				},
+        },
 				{
 					"input": "src/css/main.scss",
 					"output": "docs/css/main.css",
 					"minify": true
-				},
+        },
 				{
 					"input": "src/js/main.js",
 					"output": [
 						{
 							"file": "docs/js/main_es6_esm.js",
 							"format": "esm"
-						},
+            },
 						{
 							"file": "docs/js/main_es5_iife.js",
 							"format": "iife"
-						}
-					]
-				},
+            }
+          ]
+        },
 				{
 					"input": "src/js/_examples/es6/example.js",
 					"output": {
 						"file": "docs/js/examples/es6/example.js",
 						"format": "esm"
 					}
-				}
-			],
+        }
+      ],
 			"bundle": [
 				{
 					"input": "src/js/_examples/es5/example.js",
 					"output": "docs/js/examples/es5/example.js"
-				}
-			]
+        }
+      ]
 		}
 	},
 	"server": {
