@@ -35,6 +35,7 @@ class Emitter {
 
     if (event) {
       event.forEach(callback => {
+        // callback.call(this, data);
         callback(data);
       });
     }
@@ -88,6 +89,14 @@ class Component extends Emitter {
       this.onDestroy(this.node);
     }
   }
+  /*
+  render() {
+  	return `<div class="card--component">
+  		I'm an ES6 component!
+  	</div>`;
+  }
+  */
+
 
 }
 
@@ -108,7 +117,10 @@ class ButtonComponent extends Component {
   }
 
   render() {
-    return "<div class=\"card--component\">\n\t\t\tI'm a ButtonComponent!<br />\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>";
+    return (
+      /* html */
+      "<div class=\"card--component\">\n\t\t\tI'm a ButtonComponent!<br />\n\t\t\t<button type=\"button\" class=\"btn\">Click Me!</button>\n\t\t</div>"
+    );
   }
 
 }
@@ -123,14 +135,19 @@ class SimpleComponent extends Component {
 
 class TemplateComponent extends Component {
   render() {
-    return "<div class=\"card--component\">\n\t\t\tI'm a TemplateComponent!\n\t\t</div>";
+    return (
+      /* html */
+      "<div class=\"card--component\">\n\t\t\tI'm a TemplateComponent!\n\t\t</div>"
+    );
   }
 
 }
 
 class Main {
   constructor() {
-    var components = this.addComponents();
+    var components = this.addComponents(); // const simpleComponents = this.addSimpleComponents();
+    // const templateComponents = this.addTemplateComponents();
+    // const buttonComponents = this.addButtonComponents();
   }
 
   addComponents() {
@@ -158,6 +175,33 @@ class Main {
     instances.forEach(x => console.log(x));
     return instances;
   }
+  /*
+  addSimpleComponents() {
+  	const instances = Array.from(document.querySelectorAll('[simple-component]'))
+  		.map(node => new SimpleComponent().setNode(node));
+  	console.log('Main.addSimpleComponents', instances);
+  	return instances;
+  }
+  	addTemplateComponents() {
+  	const instances = Array.from(document.querySelectorAll('[template-component]'))
+  		.map(node => new TemplateComponent().setNode(node));
+  		console.log('Main.addTemplateComponents', instances);
+  	return instances;
+  }
+  	addButtonComponents() {
+  	const instances = Array.from(document.querySelectorAll('[button-component]'))
+  		.map(node => {
+  			const instance = new ButtonComponent().setNode(node);
+  			instance.on('click', () => {
+  				alert('clicked');
+  			});
+  			return instance;
+  		});
+  		console.log('Main.addButtonComponents', instances);
+  	return instances;
+  }
+  */
+
 
 }
 var main = new Main();
