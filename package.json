@@ -1,28 +1,28 @@
 {
-  "author": "Luca Zampetti <lzampetti@gmail.com>",
-  "name": "workshop-es6",
-  "description": "",
-  "version": "0.1.1",
-  "main": "dist/main.js",
-  "license": "MIT",
-  "keywords": [
+	"author": "Luca Zampetti <lzampetti@gmail.com>",
+	"name": "workshop-es6",
+	"description": "",
+	"version": "0.1.1",
+	"main": "dist/main.js",
+	"license": "MIT",
+	"keywords": [
     "es6",
     "es2015"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/actarian/workshop-es6.git"
-  },
-  "bugs": {
-    "url": "https://github.com/actarian/workshop-es6/issues"
-  },
-  "homepage": "https://github.com/actarian/workshop-es6",
-  "scripts": {
-    "start": "gulp",
-    "build": "gulp build --target dist"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "gulpfile-config": "~1.0.0-alpha.4"
-  }
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/actarian/workshop-es6.git"
+	},
+	"bugs": {
+		"url": "https://github.com/actarian/workshop-es6/issues"
+	},
+	"homepage": "https://github.com/actarian/workshop-es6",
+	"scripts": {
+		"start": "gulp",
+		"build": "gulp build --target dist"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"gulpfile-config": "~1.0.0-alpha.9"
+	}
 }
